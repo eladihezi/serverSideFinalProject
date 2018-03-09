@@ -2,7 +2,7 @@
 
 
 cars = 10
-collectionPoint = 70
+collectionPoint = 6
 
 populationSize = 60
 limit = 0
