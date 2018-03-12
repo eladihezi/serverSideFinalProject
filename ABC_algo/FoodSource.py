@@ -1,3 +1,5 @@
+import json
+
 from .fitnessFunc import *
 
 
@@ -49,15 +51,19 @@ class FoodSource:
         myVector = list(self.solution)
         myVector.append(0)
         solution = list(splitz(myVector,0))
-        
+        d2 = json.load(open("dict_ID.txt"))
+        print (d2)
         for road in solution:
-            myVector = [] 
+            mydict = {}
+            i = 0
             for point in road:
-                myVector.append( str(point))
-
-            road = " -> ".join(myVector)
-            jsondict[carNumber] = road
+                i += 1
+                mydict[i] = d2[str(point)]
+                
+            jsondict[carNumber] = mydict
             carNumber += 1
+
+        json.dump(jsondict,open('data.txt', 'w'))
 
 def splitz(seq, smallest):    
     group = []    

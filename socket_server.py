@@ -42,10 +42,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         print(self.data)
         arr = self.data.decode("utf-8").split(";")
         status = message_class.globalMessage.runbyidtry(arr[0],arr[1])
+        print ("sending back ",status)
         if(type(status) == type(True)):
             self.request.send(bytes(status))
             return status
         #time.sleep(5)
+        
         # just send back the same data, but upper-cased
         self.request.send(status.encode('ASCII'))
 

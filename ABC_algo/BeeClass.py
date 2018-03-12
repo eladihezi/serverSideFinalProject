@@ -5,19 +5,19 @@ class BeeClass:
    'Common base class for all bees'
    beeCount = 0
 
-   def __init__(self, name, limit ,index,value):
+   def __init__(self, name,ffclass, limit ,index,value):
       self.name = name
       self.limit = limit
       self.index = index
       self.value = value
+      self.ffclass = ffclass
       BeeClass.beeCount += 1
-
-
-##worker bee here
+      
+    ##worker bee here
    def work(self,arr):
        tmp = list(arr)
        self.neighborhoodOperators(tmp)
-       newValue = fitnessFunction(tmp)
+       newValue = self.ffclass.fitnessFunction(tmp)
        #print ("my org arr is ",arr,"and value is ",value," and my change is " , tmp,"and value is ",newValue)
        tmp.append(newValue)
        return tmp

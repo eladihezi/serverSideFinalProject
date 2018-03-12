@@ -64,8 +64,9 @@ settings.myDBhandler = DBhandler.MyConnectionDBClass()
 
 
 data = {
-   'username' : 'root',
-   'password' : 'root',
+   'firstname' : 'root',
+   'lastname' : 'root',
+   'empID' : 1230
 }
 json_str = json.dumps(data)
 localclass  = message_class.globalMessage('5',json_str)
@@ -73,12 +74,15 @@ localclass  = message_class.globalMessage('5',json_str)
 
 print ("localclass = " ,localclass)
 localclass.runbyid()
+
 print ("check if algo running ")
 status  = "Success"
 
-while(status == "Success"):
-    status = message_class.globalMessage.runbyidtry('5','{"username": "root", "password": "eroot"}')
-    print ('status is ', status)
+while(status):
+    #status = message_class.globalMessage.runbyidtry('2','{"empID": "1234", "firstname": "eroot","lastname" : "eroot","address":"carmiel", "status" : 0}')
+    #status = message_class.globalMessage.runbyidtry('4','[{"empID": "326962784", "firstname": "igor","lastname" : "mamorski","address":"carmiel", "status" : 1}]')
+    print ('status is ',status)
     time.sleep(1)
+    status = message_class.globalMessage.runbyidtry('7','{}')
 
 print ("hi i just wake up ")

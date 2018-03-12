@@ -1,7 +1,7 @@
 from .BeeClass import *
 from .FoodSource import *
 from random import *
-from .fitnessFunc import *
+from .fitnessFunc import fitnessFunctionClass
 import timeit
 from .config import *
 import sys
@@ -14,9 +14,10 @@ import time
 
 
 
-def daemon():
+def daemon(collectionPoint):
 
-    time.sleep(7)
+    ffclass = fitnessFunctionClass()
+    time.sleep(10)
     saveout = sys.stdout
     sys.stdout = open("file.xt", "w+")
 
@@ -32,7 +33,7 @@ def daemon():
             rand1 = randint(0,len(myList)-1)
             tmparr.append(myList[rand1])
             del myList[rand1]
-        return FoodSource(tmparr,fitnessFunction(tmparr),new_or_not)
+        return FoodSource(tmparr,ffclass.fitnessFunction(tmparr),new_or_not)
 
     def initiatePopulation(collectionPoint,cars,populationSize):
         allPopulation = []
@@ -50,11 +51,10 @@ def daemon():
 
 
     ##init martix/food sources/bees
-    #initTravelCostMatrix(collectionPoint+1)
     allPopulation = initiatePopulation(collectionPoint,cars,populationSize)
-    bee = BeeClass("Employed" ,limit,0,0)
-    for f in allPopulation:
-        workBees.append(BeeClass("Employed" ,limit,f.ID,f.value))
+    bee = BeeClass("Employed" ,ffclass,limit,0,0)
+    # for f in allPopulation:
+    #     workBees.append(BeeClass("Employed" ,limit,f.ID,f.value))
 
     print("we initiate bees Population")
     print("we initiate foodSource Population")
@@ -83,12 +83,12 @@ def daemon():
         
         
         ##ONLOOKER BEE
-        probVector = setProbability(FFPopulationFoodSource)
+        probVector = fitnessFunctionClass.setProbability(FFPopulationFoodSource)
         group = [[] for i in range(0,populationSize)]
         valueGroup = [[] for i in range(0,populationSize)]
         for loopCounter in range(0, populationSize):
             #this index is chosen by probability of the FF
-            index = rouletteWeelGetIndex(probVector,probVector[-1])
+            index = fitnessFunctionClass.rouletteWeelGetIndex(probVector,probVector[-1])
             localFoodScource = allPopulation[index]
             altenativeSolution = bee.work(localFoodScource.solution)
             newValue = altenativeSolution.pop()
@@ -142,7 +142,7 @@ def daemon():
     allPopulation[0].print_me()
     print()
     print()
-    fitnessFunction(allPopulation[0].solution)
+    ffclass.fitnessFunction(allPopulation[0].solution)
     elapsed = timeit.default_timer() - start_time
     print ("total time elapsed is  ",elapsed," sec")
     sys.stdout=saveout 
