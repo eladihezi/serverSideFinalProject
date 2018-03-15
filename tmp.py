@@ -69,6 +69,7 @@ data = {
    'empID' : 1230
 }
 json_str = json.dumps(data)
+json_str = '{"numofvehicles":6,"routequality":"low"}'
 localclass  = message_class.globalMessage('5',json_str)
 
 
@@ -83,6 +84,6 @@ while(status):
     #status = message_class.globalMessage.runbyidtry('4','[{"empID": "326962784", "firstname": "igor","lastname" : "mamorski","address":"carmiel", "status" : 1}]')
     print ('status is ',status)
     time.sleep(1)
-    status = message_class.globalMessage.runbyidtry('7','{}')
+    status = message_class.globalMessage.runbyidtry('7','{"numofvehicles":6,"routequality":"medium"}')
 
 print ("hi i just wake up ")

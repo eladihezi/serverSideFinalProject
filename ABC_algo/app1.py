@@ -6,27 +6,41 @@ import timeit
 from .config import *
 import sys
 import time
+import math
+
+
+global LOOPCOUNTER
 
 
 
 
+def daemon(dict_of_param):
 
-
-
-
-def daemon(collectionPoint):
-
-    ffclass = fitnessFunctionClass()
-    time.sleep(10)
     saveout = sys.stdout
     sys.stdout = open("file.xt", "w+")
 
+    collectionPoint = dict_of_param['collectionPoint']
+    numofcars = dict_of_param['numofvehicles']
+    route_quality = dict_of_param['routequality']
+
+    numOfIterations = {
+        'low' : math.pow(collectionPoint,2)*numofcars,
+        'medium' : math.pow(collectionPoint,3)*numofcars,
+        'high' : math.pow(collectionPoint,4)*numofcars,
+    }
+
+    ffclass = fitnessFunctionClass()
+    #time.sleep(10)
+
+
     start_time = timeit.default_timer()
     print("start time is ", start_time)
-    
+    print ("collection Points is {}, num of cars is {}, route quality is {} and itration is {}".format(*(collectionPoint,numofcars,route_quality,numOfIterations[route_quality])))
+
     def initiateFoodScource(points  , numOfCars,new_or_not):
         tmparr = [0]    
         myList = [i+1 for i in range(points)]
+        #print("number of real cars is ",numOfCars)
         for x in range(0, numOfCars-1):
             myList.append(0) 
         for x in range(0, numOfCars+points-1):
@@ -51,7 +65,7 @@ def daemon(collectionPoint):
 
 
     ##init martix/food sources/bees
-    allPopulation = initiatePopulation(collectionPoint,cars,populationSize)
+    allPopulation = initiatePopulation(collectionPoint,numofcars,populationSize)
     bee = BeeClass("Employed" ,ffclass,limit,0,0)
     # for f in allPopulation:
     #     workBees.append(BeeClass("Employed" ,limit,f.ID,f.value))
@@ -62,8 +76,10 @@ def daemon(collectionPoint):
 
 
 
+
+
     ## BIG LOOP
-    LOOPCOUNTER = numOfIterations
+    LOOPCOUNTER = numOfIterations[route_quality]
     while(LOOPCOUNTER > 0 ):
         LOOPCOUNTER -= 1
         
@@ -117,7 +133,8 @@ def daemon(collectionPoint):
         ##SCOUT BEE
         #check if any foodsource reach the limit (BETA: we not going to change our 10% of out best solutions  )
         for i, f in enumerate(allPopulation):
-            if(f.limit >= LIMIT and i > populationSize / 10):
+            #if(f.limit >= LIMIT and i > populationSize / 10): #dont touch the 10% of best 
+            if(f.limit >= LIMIT ): 
                 localSolution = bee.work(f.solution)
                 f.setBetterFood( localSolution,localSolution.pop() )
 

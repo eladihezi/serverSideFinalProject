@@ -7,7 +7,7 @@ import json
 import numpy
 
 
-
+#from ABC_algo import LOOPCOUNTER
 import math
 import googlemaps 
 
@@ -17,14 +17,20 @@ import settings
 class MyThread():
     def __init__(self):
         ''' Constructor. '''
+        self.d = ''
 
-    def run(self,val):
-        self.d = threading.Thread(name='daemon', target=app1.daemon,args=(val,))
+    def run(self,data):
+        
+        self.d = threading.Thread(name='daemon', target=app1.daemon,args=(data,))
         self.d.start()
 
     def isAlive(self):
-        return self.d.isAlive()
+        try:
+            status = self.d.isAlive()
+        except:
+            status = False
 
+        return status
         
     
 d = MyThread()
@@ -89,10 +95,12 @@ def func4(data):
 #run algo
 #TODO check that DB is updated
 def func5(data):
+    if (func7("")):
+        return False
     #check if DATABASE is updated for employees that should work
-    query = ("""SELECT  t1.empID,t1.address,t2.empID,t2.address   FROM projectdb.employees as t1 ,projectdb.employees as t2
+    query = ("""SELECT  t1.empID,t1.address,t2.empID,t2.address   FROM employees as t1 ,employees as t2
                 WHERE t1.status = 1 AND t2.status = 1 AND NOT (t1.empID = t2.empID) AND
-                (t1.empID,t2.empID) NOT IN(SELECT  sourceID,destinationID FROM projectdb.distances  )""")
+                (t1.empID,t2.empID) NOT IN(SELECT  sourceID,destinationID FROM distances  )""")
     result = settings.myDBhandler.SelectQuery(query)
     print ("result =",result)
     if( result):
@@ -101,6 +109,8 @@ def func5(data):
         for (empID1,address1,empID2,address2) in result:
         #update when needed
             distance_result = gmaps.distance_matrix(address1, address2)
+            print ("sourceID, destinationID",address1,address2)
+            print ("google results",distance_result )
             query = ("""INSERT INTO distances (sourceID, destinationID, distance)
             VALUES ({}, \'{}\',  \'{}\');""".format(*(empID1, empID2,distance_result['rows'][0]['elements'][0]['distance']['value'] )))
             status = settings.myDBhandler.InsertQuery(query)
@@ -112,33 +122,47 @@ def func5(data):
         where t1.status = 1 AND t2.status = 1 AND sourceID = t1.empID AND destinationID = t2.empID ;""")
  
     result = settings.myDBhandler.SelectQuery(query)
+    print ("result is",result,result.rowcount)
     n = math.sqrt(result.rowcount)
     n = math.ceil(n)
     distanceMatrix = [[0 for col in range(n)] for row in range(n)]
     i = 0
     dict_ID = {}
+    source_dict = {}
     for sourceID,destinationID,distance,firstname,lastname,address in result:
-        if(math.floor(i/n) == i%n):
-            distanceMatrix[math.floor(i/n)][i%n] = 0
+        if(sourceID not in source_dict):
+            source_dict[sourceID] = i
+            
+            dict_ID[i] = {
+                 'empID' : sourceID,
+                 'address' : address,
+                 'firstname' : firstname,
+                 'lastname' : lastname
+                } 
             i += 1
-            dict_ID[i%n] = {
-                'empID' : sourceID,
-                'address' : address,
-                'firstname' : firstname,
-                'lastname' : lastname
+            
+    print("new dict is ",source_dict) 
+    
+    
+    for sourceID,destinationID,distance,firstname,lastname,address in result:
+        print ( "sourceID,destinationID,distance,firstname,lastname,address",sourceID,destinationID,distance,firstname,lastname,address)
+        # if(math.floor(i/n) == i%n):
+        #     distanceMatrix[math.floor(i/n)][i%n] = 0
+        #     i += 1
 
-            }           
-        distanceMatrix[math.floor(i/n)][i%n] = distance
-        i += 1
+                       
+        distanceMatrix[source_dict[destinationID]][source_dict[sourceID]] = distance
+        #i += 1
     print ("dict is ",dict_ID)
 
     json.dump(dict_ID, open("dict_ID.txt",'w'))
     arr = numpy.asarray(distanceMatrix)
     numpy.savetxt("ABC_algo/distanceMatrix.csv", arr, delimiter = ",",fmt = '%d')
-
+    data['collectionPoint'] = n-1
+    print ("data is ",data)
     #try the algo 
     try:
-        d.run(n-1)
+        d.run(data)
         return "Success"
     except:
         return False
@@ -151,7 +175,7 @@ def func6(data):
 
 #check algo status
 def func7(data):
-    return d.d.isAlive()
+    return d.isAlive()
 
 #update emp status
 def func8(data):
@@ -173,9 +197,15 @@ def func8(data):
 def func9(data):
     print ("call func9 ...",data)
     searchby = data['searchby']
-    query = ("SELECT * FROM employees WHERE {} = {};".format(*(searchby,data[searchby])))
+    if(data['searchby'] == 'firstname'):
+        query = ("SELECT * FROM employees WHERE firstname LIKE \'{}%\' OR lastname LIKE \'{}%\';".format(*(data[searchby],data[searchby])))
+    elif(data['searchby'] == 'address'):
+        query = ("SELECT * FROM employees WHERE {} LIKE \'%{}%\';".format(*(searchby,data[searchby])))
+    else:
+        query = ("SELECT * FROM employees WHERE {} LIKE \'{}%\';".format(*(searchby,data[searchby])))
     result = settings.myDBhandler.SelectQuery(query)
     users = []
+    print (query)
     for (empID,firstname,lastname,address,status) in result:
         print("empID is {}, firstname is {}, lastname is  {}, address is ,{} status is {} ".format(*(empID,firstname,lastname,address,status)))
         user = {
@@ -196,6 +226,7 @@ def func10(data):
     user = {}
     setStr = "set "
     condStr = "WHERE empID = " + str(data['empID'])
+    address_flag = False
     i = 0 
     for key in data.keys():
         if(key == 'empID'):
@@ -204,10 +235,15 @@ def func10(data):
             setStr += "," 
         setStr += " {} = \'{}\' ".format(*(key, data[key]))
         i += 1
+        if(key == 'address'):
+            address_flag = True
     
     query = ("UPDATE employees " + setStr  + condStr)
     print ("query is", query)
     #query = ("UPDATE employees FROM employees WHERE {} = {};".format(*(searchby,data[searchby])))
     result = settings.myDBhandler.InsertQuery(query)
-
-    return (result)
+    result1 = True
+    if(address_flag):
+        query = ("DELETE FROM distances WHERE sourceID = {} OR destinationID = {}".format(*(data['empID'],data['empID'])))
+        result1 = settings.myDBhandler.InsertQuery(query)   
+    return (result and result1)

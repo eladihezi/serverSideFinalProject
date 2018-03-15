@@ -7,30 +7,21 @@ from .config import *
 import numpy
 
 
-    #_A #= []#[[0,4,3,5,6],[0,0,12,3,4],[0,0,0,2,1],[0,0,0,0,7],[0,0,0,0,0]]
-    #_size = collectionPoint + 1 # collectionPoint + 1 for factory
-     # [[0 for col in range(_size)] for row in range(_size)]
-
 
 class fitnessFunctionClass:
     'global fitness function class with methods'
    
     #mat = [[]]
     def __init__(self):
-       self.mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
-
-    # def initTravelCostMatrix():
-    #     print ("matrix size*size is " )
-    #     mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
-    #     mat = mat
-    #     print (mat)
+        self.mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
+        self.delta = 0.001
     
 
     #TODO NEED TO shape it alot
-    def fitnessFunction(self,myVector):
+    def fitnessFunction(self,route):
         totalValue = 0
         start = 0 
-        tmp_vector = list(myVector)
+        tmp_vector = list(route)
         tmp_vector.append(0)
 
         #distance cost
@@ -40,6 +31,8 @@ class fitnessFunctionClass:
                 if(i - start > 1  ):
                     totalValue += self.calTravelCost(tmp_vector[start : i+1])
                 start = i
+
+        #violation cost
 
         return (totalValue)
 
@@ -53,11 +46,12 @@ class fitnessFunctionClass:
     #   then the road is <0 -> 4 -> 5 -> 1 -> 0 > and we calculate the sum of A[0][4] + A[4][5] + A[5][1] + A[1][0]
     def calTravelCost(self,myVector): 
         totalValue = 0
-        for i in range(0,len(myVector)-1):
+        #for i in range(0,len(myVector)-1):
+        for i in range(1,len(myVector)-1):
             #print ("my vector is ",myVector,"matrix is ",self.mat)
             row = myVector[i]
             col = myVector[i+1]
-            totalValue += self.mat[row][col]
+            totalValue += self.mat[col][row]
         return (totalValue)
 
 
