@@ -12,29 +12,39 @@ class fitnessFunctionClass:
     'global fitness function class with methods'
    
     #mat = [[]]
-    def __init__(self):
+    def __init__(self,capacity):
         self.mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
-        self.delta = 0.001
-    
+        
+        self.capacity = capacity
+
+
 
     #TODO NEED TO shape it alot
-    def fitnessFunction(self,route):
+    def fitnessFunction(self, route, alpha):
         totalValue = 0
-        start = 0 
+        start = 0
+        number_of_cars = 0
         tmp_vector = list(route)
         tmp_vector.append(0)
-
+        violation = False
         #distance cost
         for i in range(1,len(tmp_vector)):  
             # slice solution to cars and calculate 
             if(tmp_vector[i] == 0):
-                if(i - start > 1  ):
+                vector_len = i - start
+                if(vector_len > 1  ):
+                    totalValue += 5000 # 5km penelty for each car
                     totalValue += self.calTravelCost(tmp_vector[start : i+1])
+                    if(vector_len > self.capacity):
+                        violation = True
+                        #violation cost
+                        qx = (vector_len - self.capacity) * 5000 # 5km 
+                        totalValue += alpha * qx
+                        #print ("we have cars that over the capacity, capacity is : {} and number of pickup points is {}, qx is {},alpha is {}"
+                        #    .format(*(self.capacity,vector_len,qx,alpha)) )
+                       
                 start = i
-
-        #violation cost
-
-        return (totalValue)
+        return (totalValue,violation)
 
 
         #print (myVector)

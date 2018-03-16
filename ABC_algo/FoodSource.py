@@ -6,28 +6,34 @@ from .fitnessFunc import *
 class FoodSource:
     foodCounter = 0
     num_of_violation = 0
-
-    def __init__(self, solution,value,new_or_not):# violation
+    alpha = 0.1
+    def __init__(self, solution,value,violation):# violation
         
         self.solution = solution
         self.value = value
-        #self.violation = 
-        if(new_or_not):
-            self.ID =  new_or_not 
-        else:           
-            FoodSource.foodCounter += 1 
-            self.ID = FoodSource.foodCounter
+        self.violation = violation
         self.limit = 0
-        #new_or_not ? FoodSource.foodCounter += 1 : 0
+
+        FoodSource.foodCounter += 1
+        self.ID = FoodSource.foodCounter
+        
+        if(violation):
+            FoodSource.num_of_violation += 1
     
     def __lt__(self, other):
         return self.value < other.value
 
 
-    def setBetterFood(self, solution, value):
+    def setBetterFood(self, solution, value,violation):
         self.solution = solution
         self.value = value
         self.limit = 0
+        if(self.violation and not violation):
+            FoodSource.num_of_violation -= 1
+        elif(violation):
+            FoodSource.num_of_violation += 1
+        self.violation = violation
+
 
     def print_me(self):
         carNumber = 1
@@ -44,7 +50,7 @@ class FoodSource:
             print("car ",carNumber ,"pick ",road)
             carNumber += 1
         #print("number of empty car is " ,cars - carNumber + 1)
-        print("ID = ",self.ID, "and the total cost is ", self.value)
+        print("ID = ",self.ID, "and the total cost is ", self.value," violation = ",self.violation)
         print(self.solution)
     
     def solutionToJson(self):
@@ -60,7 +66,7 @@ class FoodSource:
             i = 0
             for point in road:
                 i += 1
-                print(point,str(point))
+                #print(point,str(point))
                 mydict[i] = d2[str(point)]
                 
             jsondict[carNumber] = mydict

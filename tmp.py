@@ -68,8 +68,12 @@ data = {
    'lastname' : 'root',
    'empID' : 1230
 }
+# dict_of_param['collectionPoint'] = 26
+#     dict_of_param['numofvehicles'] = 7
+#     dict_of_param['routequality'] = 'low'
+#     dict_of_param['capacity'] = 5
 json_str = json.dumps(data)
-json_str = '{"numofvehicles":6,"routequality":"low"}'
+json_str = '{"numofvehicles":7,"routequality":"low","capacity" : 5}'
 localclass  = message_class.globalMessage('5',json_str)
 
 

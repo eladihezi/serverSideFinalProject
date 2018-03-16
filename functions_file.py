@@ -145,7 +145,7 @@ def func5(data):
     
     
     for sourceID,destinationID,distance,firstname,lastname,address in result:
-        print ( "sourceID,destinationID,distance,firstname,lastname,address",sourceID,destinationID,distance,firstname,lastname,address)
+        #print ( "sourceID,destinationID,distance,firstname,lastname,address",sourceID,destinationID,distance,firstname,lastname,address)
         # if(math.floor(i/n) == i%n):
         #     distanceMatrix[math.floor(i/n)][i%n] = 0
         #     i += 1
