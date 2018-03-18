@@ -98,8 +98,9 @@ def daemon(dict_of_param,stop_thread):
     LOOPCOUNTER = numOfIterations[route_quality]
     #LOOPCOUNTER = 1000
     while(LOOPCOUNTER > 0 ):
-        # if(stop_thread):
-        #     exit()
+        if(stop_thread()):
+            print("some1 killed me ")
+            exit()
         LOOPCOUNTER -= 1
         alpha = set_alpha(alpha)
         ##BEE WORKER

@@ -32,7 +32,7 @@ class MyThread():
             status = False
 
         return status
-        
+
     def mykill(self):
         self.stop_thread = True
 
@@ -256,5 +256,5 @@ def func10(data):
 
 def func11(data):
     print ("call func11 ...",data)
-    time.sleep(5)
+    #time.sleep(5)
     d.mykill()
