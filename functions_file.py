@@ -2,10 +2,10 @@
 
 import time
 from ABC_algo import app1
-import threading
+from threading import *
 import json
 import numpy
-
+import sys
 
 #from ABC_algo import LOOPCOUNTER
 import math
@@ -18,10 +18,11 @@ class MyThread():
     def __init__(self):
         ''' Constructor. '''
         self.d = ''
+        self.stop_thread = False
 
     def run(self,data):
         
-        self.d = threading.Thread(name='daemon', target=app1.daemon,args=(data,))
+        self.d = Thread(name='daemon', target=app1.daemon,args=(data,lambda : self.stop_thread),daemon=True)
         self.d.start()
 
     def isAlive(self):
@@ -31,6 +32,10 @@ class MyThread():
             status = False
 
         return status
+        
+    def mykill(self):
+        self.stop_thread = True
+
         
     
 d = MyThread()
@@ -247,3 +252,9 @@ def func10(data):
         query = ("DELETE FROM distances WHERE sourceID = {} OR destinationID = {}".format(*(data['empID'],data['empID'])))
         result1 = settings.myDBhandler.InsertQuery(query)   
     return (result and result1)
+
+
+def func11(data):
+    print ("call func11 ...",data)
+    time.sleep(5)
+    d.mykill()

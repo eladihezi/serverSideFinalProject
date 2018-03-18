@@ -14,7 +14,7 @@ global LOOPCOUNTER
 
 
 
-def daemon(dict_of_param):
+def daemon(dict_of_param,stop_thread):
 
      
     saveout = sys.stdout
@@ -49,9 +49,10 @@ def daemon(dict_of_param):
         solutionRepresentation = []    
         myList = [i+1 for i in range(points)]
         #print("number of real cars is ",cars)
-        for x in range(0, cars-1):
+        #enter 0 in array for cars
+        for i in range(cars-1):
             myList.append(0) 
-        for x in range(1, cars + points):
+        for i in range(1, cars + points): 
             rand1 = randint(0,len(myList)-1)
             solutionRepresentation.append(myList[rand1])
             del myList[rand1]
@@ -97,6 +98,8 @@ def daemon(dict_of_param):
     LOOPCOUNTER = numOfIterations[route_quality]
     #LOOPCOUNTER = 1000
     while(LOOPCOUNTER > 0 ):
+        # if(stop_thread):
+        #     exit()
         LOOPCOUNTER -= 1
         alpha = set_alpha(alpha)
         ##BEE WORKER

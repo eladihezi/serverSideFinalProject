@@ -73,12 +73,14 @@ data = {
 #     dict_of_param['routequality'] = 'low'
 #     dict_of_param['capacity'] = 5
 json_str = json.dumps(data)
-json_str = '{"numofvehicles":7,"routequality":"low","capacity" : 5}'
+json_str = '{"numofvehicles":7,"routequality":"high","vehiclecapacity" : 5}'
 localclass  = message_class.globalMessage('5',json_str)
 
 
 print ("localclass = " ,localclass)
 localclass.runbyid()
+
+#message_class.globalMessage.runbyidtry('11','{}')
 
 print ("check if algo running ")
 status  = "Success"
