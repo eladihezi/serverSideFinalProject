@@ -14,17 +14,21 @@ import DBhandler
 
 
 class MyThread():
+    '''
+    local class that hold the Algorithem thread pointer to start it  or stop it.
+    '''
     def __init__(self):
         ''' Constructor. '''
         self.d = ''
         self.stop_thread = False
 
-    def run(self,data):
-        
+    # start the Algorithem
+    def run(self,data):       
         self.d = threading.Thread(name='daemon', target=ABCmain.daemon,args=(data,lambda : self.stop_thread),daemon=True)
         self.stop_thread = False
         self.d.start()
 
+    # check if thread is running
     def isAlive(self):
         try:
             status = self.d.isAlive()
@@ -32,17 +36,19 @@ class MyThread():
             status = False
 
         return status
-
+    # stop the thread 
     def mykill(self):
         self.stop_thread = True
 
         
-    
+   
 d = MyThread()
 myDBhandler = DBhandler.MyConnectionDBClass()
 
 
-### functions  by id        
+""" functions handling  requests from client """
+
+# LOGIN - check if admin user is in DB or not      
 def LOGIN(data):
     username = data['username']
     password = data['password']
@@ -52,8 +58,7 @@ def LOGIN(data):
         return True
     return False
 
-#add emp 
-#TODO set -1 values in distance matrix in DB
+# ADD_EMPLOYEE - add employee to DB
 def ADD_EMPLOYEE(data):
     empID = data['empID']
     firstname = data['firstname']
@@ -65,14 +70,13 @@ def ADD_EMPLOYEE(data):
     result = myDBhandler.InsertQuery(query)
     return result
 
-#get emp list
-#TODO check if its not empty
+# GET_EMPLOYEE_LIST - return employee table
+# TODO check if its not empty
 def GET_EMPLOYEE_LIST(data):
     query = ("SELECT * FROM employees WHERE not (empID = 0 );")
     result = myDBhandler.SelectQuery(query)
     users = []
     for (empID,firstname,lastname,address,status) in result:
-        #print("empID is {}, firstname is {}, lastname is  {}, address is {}, status is {} ".format(*(empID,firstname,lastname,address,status)))
         user = {
             'empID' : empID,
             'firstname' : firstname,
@@ -84,104 +88,91 @@ def GET_EMPLOYEE_LIST(data):
     return (json.dumps(users))
 
 
-#remove emp
+# REMOVE_EMPLOYEE - delete employee from DB by give empID
 def REMOVE_EMPLOYEE(data):
-    empID =  data[0]['empID']
-    result = ''
+    result = False
     for emp in data:
         empID =  emp['empID']
         query = ("DELETE FROM employees WHERE empID = {} ;".format(*(empID,)))
-        result += myDBhandler.InsertQuery(query)
-    result = myDBhandler.InsertQuery(query)
+        result = myDBhandler.InsertQuery(query)
     return result
     
 
 
-#run algo
-#TODO check that DB is updated
+# RUN_ALGORITHM -  
+# 1) check if algo is already runs
+# 2) check if DB is updated and update if needed
+# 3) print to file the distance matrix and start the Algorithm in new thread
+# TODO check that DB is updated
 def RUN_ALGORITHM(data):
     if (CHECK_ALGORITHM_STATUS("")):
         return False
-    #check if DATABASE is updated for employees that should work
+    # check if DATABASE is updated for employees that should work
     query = ("""SELECT  t1.empID,t1.address,t2.empID,t2.address   FROM employees as t1 ,employees as t2
                 WHERE t1.status = 1 AND t2.status = 1 AND NOT (t1.empID = t2.empID) AND
                 (t1.empID,t2.empID) NOT IN(SELECT  sourceID,destinationID FROM distances  )""")
     result = myDBhandler.SelectQuery(query)
-    print ("result =",result)
     if( result):
         gmaps = googlemaps.Client(key='AIzaSyBN-UulFeXqjqECo628iWwY9pEZyGRUltA')
         
         for (empID1,address1,empID2,address2) in result:
         #update when needed
             distance_result = gmaps.distance_matrix(address1, address2)
-            print ("sourceID, destinationID",address1,address2)
-            print ("google results",distance_result )
             query = ("""INSERT INTO distances (sourceID, destinationID, distance)
             VALUES ({}, \'{}\',  \'{}\');""".format(*(empID1, empID2,distance_result['rows'][0]['elements'][0]['distance']['value'] )))
             status = myDBhandler.InsertQuery(query)
             
 
-    #get the needed matrix and write it for the algo
+    # get the needed matrix and write it for the algo
     query = ("""SELECT  sourceID,destinationID,distance,t1.firstname,t1.lastname,t1.address
         FROM projectdb.employees as t1 ,projectdb.employees as t2,projectdb.distances
         where t1.status = 1 AND t2.status = 1 AND sourceID = t1.empID AND destinationID = t2.empID ;""")
  
     result = myDBhandler.SelectQuery(query)
-    print ("result is",result,result.rowcount)
     n = math.sqrt(result.rowcount)
     n = math.ceil(n)
     distanceMatrix = [[0 for col in range(n)] for row in range(n)]
     i = 0
     dict_ID = {}
     source_dict = {}
+
+    # make dictionary from empID => index in matrix
     for sourceID,destinationID,distance,firstname,lastname,address in result:
         if(sourceID not in source_dict):
-            source_dict[sourceID] = i
-            
+            source_dict[sourceID] = i 
             dict_ID[i] = {
                  'empID' : sourceID,
                  'address' : address,
                  'firstname' : firstname,
                  'lastname' : lastname
                 } 
-            i += 1
-            
-    print("new dict is ",source_dict) 
-    
-    
-    for sourceID,destinationID,distance,firstname,lastname,address in result:
-        #print ( "sourceID,destinationID,distance,firstname,lastname,address",sourceID,destinationID,distance,firstname,lastname,address)
-        # if(math.floor(i/n) == i%n):
-        #     distanceMatrix[math.floor(i/n)][i%n] = 0
-        #     i += 1
-
-                       
-        distanceMatrix[source_dict[destinationID]][source_dict[sourceID]] = distance
-        #i += 1
-    print ("dict is ",dict_ID)
-
+            i += 1 
     json.dump(dict_ID, open("dict_ID.txt",'w'))
+
+    # initiate matrix file for the Algorithm thread
+    for sourceID,destinationID,distance,firstname,lastname,address in result:       
+        distanceMatrix[source_dict[destinationID]][source_dict[sourceID]] = distance
     arr = numpy.asarray(distanceMatrix)
     numpy.savetxt("ABC_algo/distanceMatrix.csv", arr, delimiter = ",",fmt = '%d')
     data['collectionPoint'] = n-1
-    print ("data is ",data)
-    #try the algo 
+
+    # run the Algorithm in new thread 
     try:
         d.run(data)
         return "Success"
     except:
         return False
 
-#get routes
+# GET_ROUTES - return the routes results from the last running Algorithm
 def GET_ROUTES(data):
     local = json.load(open("data.txt"))
     return json.dumps(local)
 
-#check algo status
+# CHECK_ALGORITHM_STATUS - return True if thread is running and False otherwise
 def CHECK_ALGORITHM_STATUS(data):
     return d.isAlive()
 
-#update emp status
+# SET_WORKER - change employees status 
 def SET_WORKER(data):
     query = """UPDATE employees 
         SET status = {}
@@ -190,13 +181,10 @@ def SET_WORKER(data):
     for emp in data:
         local_string += " OR empID = {}".format(*(emp['empID'],))
     query += local_string
-    print ("query is ",query)
     result = myDBhandler.InsertQuery(query)
-    print ("result is ",result)
-    
     return result
 
-#search emp by empID/name/address
+# SEARCH - search employee by empID/name/address
 def SEARCH(data):
     searchby = data['searchby']
     if(data['searchby'] == 'firstname'):
@@ -207,9 +195,8 @@ def SEARCH(data):
         query = ("SELECT * FROM employees WHERE {} LIKE \'{}%\';".format(*(searchby,data[searchby])))
     result = myDBhandler.SelectQuery(query)
     users = []
-    print (query)
+    # change result to dictionary so we can return json easily
     for (empID,firstname,lastname,address,status) in result:
-        print("empID is {}, firstname is {}, lastname is  {}, address is ,{} status is {} ".format(*(empID,firstname,lastname,address,status)))
         user = {
             'empID' : empID,
             'firstname' : firstname,
@@ -218,11 +205,10 @@ def SEARCH(data):
             'status' : status
         }
         users.append(user)
-
-    print (json.dumps(users))#it str now
     return (json.dumps(users))
 
-#update emp data
+# UPDATE - update employee details 
+# if address is change remove him from distance table
 def UPDATE(data):
     user = {}
     setStr = "set "
@@ -240,8 +226,6 @@ def UPDATE(data):
             address_flag = True
     
     query = ("UPDATE employees " + setStr  + condStr)
-    print ("query is", query)
-    #query = ("UPDATE employees FROM employees WHERE {} = {};".format(*(searchby,data[searchby])))
     result = myDBhandler.InsertQuery(query)
     result1 = True
     if(address_flag):
@@ -249,6 +233,6 @@ def UPDATE(data):
         result1 = myDBhandler.InsertQuery(query)   
     return (result and result1)
 
-
+# KILL_PROCESS - stop the Algorithm thread
 def KILL_PROCESS(data):
     d.mykill()
