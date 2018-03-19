@@ -22,8 +22,7 @@ import threading
 import tkinter as tk
 
 import message_class
-
-import DBhandler
+import defineCommands
 
 from tkinter.scrolledtext import ScrolledText
 
@@ -41,18 +40,12 @@ class QueueLogger(logging.Handler):
     def emit(self, record):
         self.queue.put(self.format(record).rstrip('\n') + '\n')
 
-# class LoggedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
-#     def __init__(self, server_address, RequestHandlerClass, logger):
-#         socketserver.UDPServer.__init__(self, server_address, RequestHandlerClass)
-#         # Add the queue logger
-#         self.logger = logger
-
-# class UDPHandler(socketserver.BaseRequestHandler):   
-#     def handle(self):
-#         # Queue logger is un under the self.server object
-#         self.server.logger.debug(self.request[0])
 
 class LoggedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    '''
+    Server class for openning connection
+    '''
+    # open the server connection in a thread
     def __init__(self, server_address, RequestHandlerClass, logger):
         socketserver.TCPServer.__init__(self, server_address, RequestHandlerClass)
         # Add the queue logger
@@ -66,32 +59,32 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     override the handle() method to implement communication to the
     client.
     """
+
+    # get the msg from client and send back msg   
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
         print("{} wrote:".format(self.client_address[0]))
-        print(self.data)
-        arr = self.data.decode("utf-8").split(";")
-        status = message_class.globalMessage.runbyidtry(arr[0],arr[1])
         
-        #print ("sending back ",status)
+        arr = self.data.decode("utf-8").split(";")
+        print_to_logger(" RECIVED : " + defineCommands.dict_commands[int(arr[0])])
+        status = message_class.globalMessage.runbyid(arr[0],arr[1])
+        
         
         mymsg  = str(len(str(status))) + ';' + str(status)
-        #print ("mymsg is ",mymsg ,str(status))
-        # if(type(status) == type(True)):
-        #     self.request.send(bytes(status))
-        #     return status
-        #time.sleep(5)
-        #status = """[{"empID": 1231, "firstname": "igor", "lastname": "mamorski", "status": 1, "address": "Sarig St 5 Karmiel"}, {"empID": 1233, "firstname": "elad", "lastname": "hezi", "status": 1, "address": "Ha-Dekel St 56 Karmiel"}, {"empID": 1234, "firstname": "vered", "lastname": "hezi", "status": 1, "address": "Ramim St 37 Karmiel"}, {"empID": 1235, "firstname": "orlando", "lastname": "bloom", "status": 1, "address": "Arava St 10 Karmiel"}, {"empID": 1236, "firstname": "johni", "lastname": "depp", "status": 1, "address": "HaShoshanim Street 4 Karmiel"}, {"empID": 1237, "firstname": "bibi", "lastname": "netaniyahu", "status": 1, "address": "Sderot Jabotinsky 10 Kiryat Yam"}, {"empID": 2030405, "firstname": "oren", "lastname": "hazan", "status": 1, "address": "kiryat ata, hankin st 10"}, {"empID": 4583456, "firstname": "zehava", "lastname": "galon", "status": 1, "address": "David Noy st 39, acre"}, {"empID": 5678435, "firstname": "zipi", "lastname": "livni", "status": 1, "address": "Hativat Harel st 151, Karmiel"}, {"empID8"""
-        #my_len = len(status) + len(str(len(status))) + 1
-         
-
-        #print("len msg is ",len(status))
-        print(mymsg.encode('ASCII'))
+        print_to_logger(" SENDING : " + str(status))
         # just send back the same data, but upper-cased
-        self.request.send(mymsg.encode('ASCII'))
+        self.request.send(bytes(mymsg,"utf-8"))
+    
+
+
+
+
 
 class MainApplication:
+    '''
+    Main class that initiate all (gui + server + logger)
+    '''
     def __init__(self, root, log_level, ip, port ):
         self.root = root
         self.log_level = log_level
@@ -110,24 +103,39 @@ class MainApplication:
         # Main fram can enlarge
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.columnconfigure(1, weight=1)
+        self.main_frame.columnconfigure(2, weight=1)
+        self.main_frame.columnconfigure(3, weight=1)
+        self.main_frame.columnconfigure(4, weight=1)
         self.main_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.main_frame.configure(bg=frame_bgr_stop)
-        
+
+
+
+        #self.port_text.insert('end',port)
+
+
         # Run/Stop button
         self.control_button = tk.Button(self.main_frame, text="Run Server", font=btn_font, bg=btn_clr, command=self.run_server)
-        self.control_button.grid(row=0, column=0, sticky=tk.EW, ipady=20)
+        self.control_button.grid(row=0, column=0,  ipady=10)
         
+        self.L1 = tk.Label(self.main_frame, text="Port number", bg=frame_bgr_stop, font=('Century Gotic', 12, 'bold'))
+        self.L1.grid(row=0, column=1,  ipady=10)
+
+        self.E1 = tk.Entry(self.main_frame, width=10, font=btn_font)
+        self.E1.grid(row=0, column=2,  ipady=10)
+        self.E1.insert('end', '1234')
+
         # Clear button
         self.clear_button = tk.Button(self.main_frame, text="Clear Log", font=btn_font, bg=btn_clr, command=self.clear_log)
-        self.clear_button.grid(row=1, column=0, sticky=tk.EW, ipady=20)
+        self.clear_button.grid(row=0, column=3,  ipady=10)
         
         # Stop log button
         self.control_log_button = tk.Button(self.main_frame, text="Pause Log", font=btn_font, bg=btn_clr, command=self.stop_log)
-        self.control_log_button.grid(row=2, column=0, sticky=tk.EW, ipady=20)
+        self.control_log_button.grid(row=0, column=4, ipady=10)
 
         # Logs Widget
         self.log_widget = ScrolledText(self.main_frame)
-        self.log_widget.grid(row=0, column=1, rowspan=3, sticky=tk.NSEW)
+        self.log_widget.grid(row=1, column=0, columnspan=5, sticky=tk.NSEW)
         
         # Not editable
         self.log_widget.config(state='disabled') 
@@ -149,14 +157,14 @@ class MainApplication:
         self.start_log()
 
     def stop_log(self):
-        self.logger.debug("Pausing the logger")
+        self.logger.info("Pausing the logger")
         if self.logger_alarm is not None:
             self.log_widget.after_cancel(self.logger_alarm)
             self.control_log_button.configure(text="Start Log", command=self.start_log)
             self.logger_alarm = None
 
     def start_log(self):
-        self.logger.debug("Starting the logger")
+        self.logger.info("Starting the logger")
         self.update_widget(self.log_widget, self.log_queue)
         self.control_log_button.configure(text="Pause Log", command=self.stop_log)
 
@@ -176,8 +184,10 @@ class MainApplication:
         self.log_widget.delete(0.0, tk.END)
         self.log_widget.config(state='disabled')
 
+    # run_server - open connection when the button is pressed
     def run_server(self):
-        self.logger.debug("Starting thread")
+        self.port = int(self.E1.get())
+        self.logger.info("Starting Server on ip %s and port %d",self.ip, self.port)
         try:
             self.server = LoggedTCPServer((self.ip, self.port), MyTCPHandler, self.logger)
             self.server_thread = threading.Thread(name='server', target=self.server.serve_forever)
@@ -185,18 +195,22 @@ class MainApplication:
             self.server_thread.start()
             self.control_button.configure(text="Stop Server", command=self.stop_server)
             self.main_frame.configure(bg=frame_bgr_run)
+            self.L1.configure(bg=frame_bgr_run)
         except Exception:
-            self.logger.error("Cannot start the server: %s" % e)
+            self.logger.error("Cannot start the server: %s",str(self.ip))
             raise Exception
-        
+    
+    # stop_server - close connection when the button is pressed    
     def stop_server(self):
-        self.logger.debug("Stopping server")
+        self.logger.info("Stopping server")
         self.server.shutdown()
         self.server.socket.close()
         self.logger.debug("Server stopped")
         self.control_button.configure(text="Run Server", command=self.run_server)
         self.main_frame.configure(bg=frame_bgr_stop)
+        self.L1.configure(bg=frame_bgr_stop)
 
+# get_ip - local function that return the local ip 
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -209,16 +223,14 @@ def get_ip():
         s.close()
     return IP
 
+def print_to_logger(data):
+    app.logger.info(data)
+
+# main - open the gui and call the main class constructor
 if __name__ == "__main__": 
     root = tk.Tk()
     (address, port) = get_ip(), 1234
-    # if len(sys.argv) == 3:
-    #     port = int(sys.argv[2])
-    #     address = sys.argv[1] 
         
     app = MainApplication(root, logging.DEBUG, address, port)
     root.title('GO2WORK')
     root.mainloop()
-    # else:
-    #     print ("Error: you must specify address and port..")
-    #     sys.exit(-1)

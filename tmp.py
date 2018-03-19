@@ -66,7 +66,7 @@ data = {
    'lastname' : 'root',
    'empID' : 1230
 }
-message_class.globalMessage.runbyidtry(1,data)
+message_class.globalMessage.runbyid(1,data)
 
 exit()
 
@@ -82,16 +82,16 @@ localclass  = message_class.globalMessage('5',json_str)
 print ("localclass = " ,localclass)
 localclass.runbyid()
 
-#message_class.globalMessage.runbyidtry('11','{}')
+#message_class.globalMessage.runbyid('11','{}')
 
 print ("check if algo running ")
 status  = "Success"
 
 while(status):
-    #status = message_class.globalMessage.runbyidtry('2','{"empID": "1234", "firstname": "eroot","lastname" : "eroot","address":"carmiel", "status" : 0}')
-    #status = message_class.globalMessage.runbyidtry('4','[{"empID": "326962784", "firstname": "igor","lastname" : "mamorski","address":"carmiel", "status" : 1}]')
+    #status = message_class.globalMessage.runbyid('2','{"empID": "1234", "firstname": "eroot","lastname" : "eroot","address":"carmiel", "status" : 0}')
+    #status = message_class.globalMessage.runbyid('4','[{"empID": "326962784", "firstname": "igor","lastname" : "mamorski","address":"carmiel", "status" : 1}]')
     print ('status is ',status)
     time.sleep(1)
-    status = message_class.globalMessage.runbyidtry('7','{"numofvehicles":6,"routequality":"low"}')
+    status = message_class.globalMessage.runbyid('7','{"numofvehicles":6,"routequality":"low"}')
 
 print ("hi i just wake up ")
