@@ -25,7 +25,8 @@ def daemon(dict_of_param,stop_thread):
     #sys.stdout = open("file.xt", "w+")
 
     delta = 0.001
-    alpha = 0.1
+    #alpha is coefficients of the violation function qx
+    alpha = 0.9
     capacity = 10
 
     collectionPoint = dict_of_param['collectionPoint']
@@ -71,7 +72,7 @@ def daemon(dict_of_param,stop_thread):
         return allPopulation
 
     def set_alpha(alpha):
-        if(FoodSource.num_of_violation > populationSize/2 ):
+        if(FoodSource.num_of_violation > populationSize / 3 ):
             alpha = alpha * (1 + delta)
         else:
             alpha = alpha / (1 + delta)
@@ -117,7 +118,8 @@ def daemon(dict_of_param,stop_thread):
             else :
                 f.limit += 1
             
-        #allPopulation.sort()  
+        #allPopulation.sort()
+        #set index Respectively   
         FFPopulationFoodSource = [f.value for f in allPopulation]
         
         alpha = set_alpha(alpha)
@@ -139,7 +141,7 @@ def daemon(dict_of_param,stop_thread):
 
         for i, gi in enumerate(group):
             localValueGroup = valueGroup[i]
-            orgValue = allPopulation[i].value
+            orgSource = allPopulation[i]
             localviolationGroup = violationGroup[i]
 
             if gi: #that list no empty
@@ -148,26 +150,32 @@ def daemon(dict_of_param,stop_thread):
                 bestOfGroup = gi[minIndex]
                 my_violation = localviolationGroup[minIndex]
 
-                if(minValue < orgValue):
+                if(minValue < orgSource.value):
+                    orgSource.limit = 0
                     index = len(allPopulation) - 1
                     chosen =  allPopulation[index]
                     while(index >= 0 ):
-                        if(allPopulation[index].value > orgValue and chosen.limit < allPopulation[index].limit):
+                        if(minValue < allPopulation[index].value   and chosen.limit < allPopulation[index].limit):
                             chosen = allPopulation[index]
                         index -= 1
+                    backuplimit = chosen.limit
                     chosen.setBetterFood(bestOfGroup,minValue,my_violation)
+                    chosen.limit = backuplimit
                 else:
-                    allPopulation[i].limit += 1
+                    orgSource.limit += 1
         
-        alpha = set_alpha(alpha)          
+        alpha = set_alpha(alpha)  
+        allPopulation.sort()       
         ##SCOUT BEE
         #check if any foodsource reach the limit (BETA: we not going to change our 10% of out best solutions  )
         for i, f in enumerate(allPopulation):
-            #if(f.limit >= LIMIT and i > populationSize / 10): #dont touch the 10% of best 
-            if(f.limit >= LIMIT ): 
+            if(f.limit >= LIMIT and i > populationSize / 10): #dont touch the 10% of best 
+            #if(f.limit >= LIMIT ):
+                backuplimit = f.limit
                 (new_solution, new_value,new_violation) = bee.work(f.solution,alpha)
                 #print (new_solution, new_value,new_violation)
                 f.setBetterFood(new_solution, new_value,new_violation)
+                f.limit = backuplimit
 
 
 
@@ -195,9 +203,12 @@ def daemon(dict_of_param,stop_thread):
     #ffclass.fitnessFunction(allPopulation[0].solution,0.1)
     elapsed = timeit.default_timer() - start_time
     print ("total time elapsed is  ",elapsed," sec")
-    sys.stdout=saveout 
-
-    return allPopulation[0].solutionToJson()
+    sys.stdout=saveout
+    best_solution = allPopulation[0]
+    for f in allPopulation :
+        if(not f.violation):
+            best_solution = f
+    return best_solution.solutionToJson()
 
 
 

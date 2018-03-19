@@ -12,8 +12,6 @@ from ABC_algo import ABCmain
 import googlemaps 
 import DBhandler
 
-#from settings import *
-#from socket_server import myDBhandler
 
 class MyThread():
     def __init__(self):
@@ -24,6 +22,7 @@ class MyThread():
     def run(self,data):
         
         self.d = threading.Thread(name='daemon', target=ABCmain.daemon,args=(data,lambda : self.stop_thread),daemon=True)
+        self.stop_thread = False
         self.d.start()
 
     def isAlive(self):
@@ -44,7 +43,7 @@ myDBhandler = DBhandler.MyConnectionDBClass()
 
 
 ### functions  by id        
-def func1(data):
+def LOGIN(data):
     username = data['username']
     password = data['password']
     query = ("SELECT * FROM AdminUsers WHERE  username = \'{}\' AND password = \'{}\';".format(*(username,password)))
@@ -55,7 +54,7 @@ def func1(data):
 
 #add emp 
 #TODO set -1 values in distance matrix in DB
-def func2(data):
+def ADD_EMPLOYEE(data):
     empID = data['empID']
     firstname = data['firstname']
     lastname = data['lastname']
@@ -68,7 +67,7 @@ def func2(data):
 
 #get emp list
 #TODO check if its not empty
-def func3(data):
+def GET_EMPLOYEE_LIST(data):
     query = ("SELECT * FROM employees WHERE not (empID = 0 );")
     result = myDBhandler.SelectQuery(query)
     users = []
@@ -86,7 +85,7 @@ def func3(data):
 
 
 #remove emp
-def func4(data):
+def REMOVE_EMPLOYEE(data):
     empID =  data[0]['empID']
     result = ''
     for emp in data:
@@ -100,8 +99,8 @@ def func4(data):
 
 #run algo
 #TODO check that DB is updated
-def func5(data):
-    if (func7("")):
+def RUN_ALGORITHM(data):
+    if (CHECK_ALGORITHM_STATUS("")):
         return False
     #check if DATABASE is updated for employees that should work
     query = ("""SELECT  t1.empID,t1.address,t2.empID,t2.address   FROM employees as t1 ,employees as t2
@@ -174,18 +173,16 @@ def func5(data):
         return False
 
 #get routes
-def func6(data):
-    print ("call func6 ...",data)
+def GET_ROUTES(data):
     local = json.load(open("data.txt"))
     return json.dumps(local)
 
 #check algo status
-def func7(data):
+def CHECK_ALGORITHM_STATUS(data):
     return d.isAlive()
 
 #update emp status
-def func8(data):
-    print ("call func8 ...",data)
+def SET_WORKER(data):
     query = """UPDATE employees 
         SET status = {}
         WHERE empID = {}""".format(*(data[0]['status'],data[0]['empID']))
@@ -200,8 +197,7 @@ def func8(data):
     return result
 
 #search emp by empID/name/address
-def func9(data):
-    print ("call func9 ...",data)
+def SEARCH(data):
     searchby = data['searchby']
     if(data['searchby'] == 'firstname'):
         query = ("SELECT * FROM employees WHERE firstname LIKE \'{}%\' OR lastname LIKE \'{}%\';".format(*(data[searchby],data[searchby])))
@@ -227,8 +223,7 @@ def func9(data):
     return (json.dumps(users))
 
 #update emp data
-def func10(data):
-    print ("call func10 ...",data)
+def UPDATE(data):
     user = {}
     setStr = "set "
     condStr = "WHERE empID = " + str(data['empID'])
@@ -255,7 +250,5 @@ def func10(data):
     return (result and result1)
 
 
-def func11(data):
-    print ("call func11 ...",data)
-    #time.sleep(5)
+def KILL_PROCESS(data):
     d.mykill()

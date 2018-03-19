@@ -8,12 +8,10 @@ import time
 
 import MySQLdb
 
-import settings
+
 
 import DBhandler
 
-
-settings.myDBhandler = DBhandler.MyConnectionDBClass()
 
 # db = MySQLdb.connect("127.0.0.1","root","root",'test1' )
 
@@ -68,6 +66,10 @@ data = {
    'lastname' : 'root',
    'empID' : 1230
 }
+message_class.globalMessage.runbyidtry(1,data)
+
+exit()
+
 # dict_of_param['collectionPoint'] = 26
 #     dict_of_param['numofvehicles'] = 7
 #     dict_of_param['routequality'] = 'low'

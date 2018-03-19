@@ -2,6 +2,7 @@
 import json
 import functions_file 
 import DBhandler
+import defineCommands
 
 class globalMessage():
     """
@@ -20,12 +21,12 @@ class globalMessage():
 
     #call the right function by its id
     def runbyid(self):
-        my_str = getattr(functions_file, 'func' + str(self.id_request))(self.Data)
+        my_str = getattr(functions_file,  str(self.id_request))(self.Data)
         print ("my_str = ",my_str)
         return my_str
 
     def runbyidtry(id_r,data):
-        my_str = getattr(functions_file, 'func' + str(id_r))(json.loads(data))
+        my_str = getattr(functions_file, defineCommands.dict_commands[int(id_r)])(json.loads(data))
         return my_str
 
 

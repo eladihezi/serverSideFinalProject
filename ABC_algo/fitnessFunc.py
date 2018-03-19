@@ -36,13 +36,13 @@ class fitnessFunctionClass:
                 vector_len = len(new_a)
                 if(vector_len > 0):
                     new_a = [0] + new_a + [0]
-                    totalValue += 5000 # 5km penelty for each car
+                    totalValue += 3000 # 5km penelty for each car
                     totalValue += self.calTravelCost(new_a)
                     
                     #violation cost
                     if(vector_len > self.capacity):
                         violation = True                        
-                        qx = (vector_len - self.capacity) * 5000 # 5km 
+                        qx = (vector_len - self.capacity) * 10000 # 5km 
                         totalValue += alpha * qx
                         #print ("we have cars that over the capacity, capacity is : {} and number of pickup points is {}, qx is {},alpha is {}"
                         #    .format(*(self.capacity,vector_len,qx,alpha)) )
@@ -72,19 +72,9 @@ class fitnessFunctionClass:
         for elem in foodSourceFF:
             running_total += elem
             totals.append(running_total)
-
-        #debug loop
-        lastelem = 0
-        nice_view_prob = []
-        for i,elem in enumerate(totals):
-            tmp = (elem-lastelem) /running_total
-            lastelem = elem
-            nice_view_prob.append(tmp * 100)
-            #print ("my probability is ",tmp, "and index is ",i)
-        
-        #print ("my probability is vector is ", nice_view_prob)
         return(totals)
 
+    # rouletteWeelGetIndex - return index according to his Probability
     def rouletteWeelGetIndex(totals,running_total):    
         rnd = random() * running_total
         for i, total in enumerate(totals):

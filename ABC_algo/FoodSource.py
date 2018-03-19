@@ -8,11 +8,9 @@ class FoodSource:
     Food Scource class each instance is a potential solution 
     foodCounter holds the number of occurrences 
     num_of_violation holds the number of solutions that have violation
-    alpha is coefficients of the violation function qx
     """
     foodCounter = 0
     num_of_violation = 0
-    alpha = 0.5
 
     # class constructor init self parameter for later used in algo
     def __init__(self, solution,value,violation):
@@ -84,14 +82,14 @@ class FoodSource:
 
         json.dump(jsondict,open('data.txt', 'w'))
 
-# def splitz(seq, smallest):    
-#     group = []    
-#     for num in seq:
-#         if num != smallest:
-#             group.append(num)
-#         elif group:
-#             yield group
-#             group = []
+def splitz(seq, smallest):    
+    group = []    
+    for num in seq:
+        if num != smallest:
+            group.append(num)
+        elif group:
+            yield group
+            group = []
 
 
 

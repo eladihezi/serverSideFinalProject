@@ -22,7 +22,6 @@ import threading
 import tkinter as tk
 
 import message_class
-import settings
 
 import DBhandler
 
