@@ -4,26 +4,34 @@ from .fitnessFunc import *
 
 
 class FoodSource:
+    """
+    Food Scource class each instance is a potential solution 
+    foodCounter holds the number of occurrences 
+    num_of_violation holds the number of solutions that have violation
+    alpha is coefficients of the violation function qx
+    """
     foodCounter = 0
     num_of_violation = 0
-    alpha = 0.1
-    def __init__(self, solution,value,violation):# violation
+    alpha = 0.5
+
+    # class constructor init self parameter for later used in algo
+    def __init__(self, solution,value,violation):
         
         self.solution = solution
         self.value = value
         self.violation = violation
         self.limit = 0
-
         FoodSource.foodCounter += 1
-        self.ID = FoodSource.foodCounter
-        
+        self.ID = FoodSource.foodCounter       
         if(violation):
             FoodSource.num_of_violation += 1
     
+    # cmp function for sorting arr 
+    # for array of this class just use function sort
     def __lt__(self, other):
         return self.value < other.value
 
-
+    # setBetterFood - get new solution and replace it with the one that have 
     def setBetterFood(self, solution, value,violation):
         self.solution = solution
         self.value = value
@@ -34,7 +42,7 @@ class FoodSource:
             FoodSource.num_of_violation += 1
         self.violation = violation
 
-
+    # print_me - debug function to follw up how the foodsource changing
     def print_me(self):
         carNumber = 1
         myVector = list(self.solution)
@@ -53,6 +61,8 @@ class FoodSource:
         print("ID = ",self.ID, "and the total cost is ", self.value," violation = ",self.violation)
         print(self.solution)
     
+
+    # solutionToJson - convert the solution in class to json so the client could get the routes
     def solutionToJson(self):
         jsondict = {}
         carNumber = 1
@@ -74,14 +84,14 @@ class FoodSource:
 
         json.dump(jsondict,open('data.txt', 'w'))
 
-def splitz(seq, smallest):    
-    group = []    
-    for num in seq:
-        if num != smallest:
-            group.append(num)
-        elif group:
-            yield group
-            group = []
+# def splitz(seq, smallest):    
+#     group = []    
+#     for num in seq:
+#         if num != smallest:
+#             group.append(num)
+#         elif group:
+#             yield group
+#             group = []
 
 
 

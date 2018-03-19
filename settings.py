@@ -1,3 +1,3 @@
 
-def init():
-    global myDBhandler
+
+global myDBhandler

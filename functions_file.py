@@ -1,8 +1,8 @@
 
 
 import time
-from ABC_algo import app1
-from threading import *
+from ABC_algo import ABCmain
+import threading  
 import json
 import numpy
 import sys
@@ -10,8 +10,9 @@ import sys
 #from ABC_algo import LOOPCOUNTER
 import math
 import googlemaps 
+import DBhandler
 
-import settings
+#from settings import *
 #from socket_server import myDBhandler
 
 class MyThread():
@@ -22,7 +23,7 @@ class MyThread():
 
     def run(self,data):
         
-        self.d = Thread(name='daemon', target=app1.daemon,args=(data,lambda : self.stop_thread),daemon=True)
+        self.d = threading.Thread(name='daemon', target=ABCmain.daemon,args=(data,lambda : self.stop_thread),daemon=True)
         self.d.start()
 
     def isAlive(self):
@@ -39,7 +40,7 @@ class MyThread():
         
     
 d = MyThread()
-
+myDBhandler = DBhandler.MyConnectionDBClass()
 
 
 ### functions  by id        
@@ -47,7 +48,7 @@ def func1(data):
     username = data['username']
     password = data['password']
     query = ("SELECT * FROM AdminUsers WHERE  username = \'{}\' AND password = \'{}\';".format(*(username,password)))
-    result = settings.myDBhandler.SelectQuery(query)
+    result = myDBhandler.SelectQuery(query)
     if(result):
         return True
     return False
@@ -62,14 +63,14 @@ def func2(data):
     status = data['status']
     query = ("""INSERT INTO employees (empID, firstname, lastname,address,status)
         VALUES ({}, \'{}\', \'{}\', \'{}\',{});""".format(*(empID,firstname, lastname,address,status)))
-    result = settings.myDBhandler.InsertQuery(query)
+    result = myDBhandler.InsertQuery(query)
     return result
 
 #get emp list
 #TODO check if its not empty
 def func3(data):
     query = ("SELECT * FROM employees WHERE not (empID = 0 );")
-    result = settings.myDBhandler.SelectQuery(query)
+    result = myDBhandler.SelectQuery(query)
     users = []
     for (empID,firstname,lastname,address,status) in result:
         #print("empID is {}, firstname is {}, lastname is  {}, address is {}, status is {} ".format(*(empID,firstname,lastname,address,status)))
@@ -91,8 +92,8 @@ def func4(data):
     for emp in data:
         empID =  emp['empID']
         query = ("DELETE FROM employees WHERE empID = {} ;".format(*(empID,)))
-        result += settings.myDBhandler.InsertQuery(query)
-    result = settings.myDBhandler.InsertQuery(query)
+        result += myDBhandler.InsertQuery(query)
+    result = myDBhandler.InsertQuery(query)
     return result
     
 
@@ -106,7 +107,7 @@ def func5(data):
     query = ("""SELECT  t1.empID,t1.address,t2.empID,t2.address   FROM employees as t1 ,employees as t2
                 WHERE t1.status = 1 AND t2.status = 1 AND NOT (t1.empID = t2.empID) AND
                 (t1.empID,t2.empID) NOT IN(SELECT  sourceID,destinationID FROM distances  )""")
-    result = settings.myDBhandler.SelectQuery(query)
+    result = myDBhandler.SelectQuery(query)
     print ("result =",result)
     if( result):
         gmaps = googlemaps.Client(key='AIzaSyBN-UulFeXqjqECo628iWwY9pEZyGRUltA')
@@ -118,7 +119,7 @@ def func5(data):
             print ("google results",distance_result )
             query = ("""INSERT INTO distances (sourceID, destinationID, distance)
             VALUES ({}, \'{}\',  \'{}\');""".format(*(empID1, empID2,distance_result['rows'][0]['elements'][0]['distance']['value'] )))
-            status = settings.myDBhandler.InsertQuery(query)
+            status = myDBhandler.InsertQuery(query)
             
 
     #get the needed matrix and write it for the algo
@@ -126,7 +127,7 @@ def func5(data):
         FROM projectdb.employees as t1 ,projectdb.employees as t2,projectdb.distances
         where t1.status = 1 AND t2.status = 1 AND sourceID = t1.empID AND destinationID = t2.empID ;""")
  
-    result = settings.myDBhandler.SelectQuery(query)
+    result = myDBhandler.SelectQuery(query)
     print ("result is",result,result.rowcount)
     n = math.sqrt(result.rowcount)
     n = math.ceil(n)
@@ -193,7 +194,7 @@ def func8(data):
         local_string += " OR empID = {}".format(*(emp['empID'],))
     query += local_string
     print ("query is ",query)
-    result = settings.myDBhandler.InsertQuery(query)
+    result = myDBhandler.InsertQuery(query)
     print ("result is ",result)
     
     return result
@@ -208,7 +209,7 @@ def func9(data):
         query = ("SELECT * FROM employees WHERE {} LIKE \'%{}%\';".format(*(searchby,data[searchby])))
     else:
         query = ("SELECT * FROM employees WHERE {} LIKE \'{}%\';".format(*(searchby,data[searchby])))
-    result = settings.myDBhandler.SelectQuery(query)
+    result = myDBhandler.SelectQuery(query)
     users = []
     print (query)
     for (empID,firstname,lastname,address,status) in result:
@@ -246,11 +247,11 @@ def func10(data):
     query = ("UPDATE employees " + setStr  + condStr)
     print ("query is", query)
     #query = ("UPDATE employees FROM employees WHERE {} = {};".format(*(searchby,data[searchby])))
-    result = settings.myDBhandler.InsertQuery(query)
+    result = myDBhandler.InsertQuery(query)
     result1 = True
     if(address_flag):
         query = ("DELETE FROM distances WHERE sourceID = {} OR destinationID = {}".format(*(data['empID'],data['empID'])))
-        result1 = settings.myDBhandler.InsertQuery(query)   
+        result1 = myDBhandler.InsertQuery(query)   
     return (result and result1)
 
 

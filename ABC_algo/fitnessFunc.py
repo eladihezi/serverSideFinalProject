@@ -4,6 +4,7 @@ import timeit
 from .config import * 
 
 
+
 import numpy
 
 
@@ -11,54 +12,52 @@ import numpy
 class fitnessFunctionClass:
     'global fitness function class with methods'
    
-    #mat = [[]]
+    # class constructor get the distance matrix from the file after the server write the values to the file
+    # and set capacity as given
     def __init__(self,capacity):
         self.mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
-        
         self.capacity = capacity
 
 
 
-    #TODO NEED TO shape it alot
+    # fitnessFunction - the main method of the class return the value of a given solution
+    # split the vector by value 0  and calculate the value of the road
     def fitnessFunction(self, route, alpha):
         totalValue = 0
-        start = 0
         number_of_cars = 0
         tmp_vector = list(route)
         tmp_vector.append(0)
         violation = False
-        #distance cost
-        for i in range(1,len(tmp_vector)):  
-            # slice solution to cars and calculate 
-            if(tmp_vector[i] == 0):
-                vector_len = i - start
-                if(vector_len > 1  ):
+        # print("arrlocal",tmp_vector)
+        last_index = 0
+        for i, val in enumerate(tmp_vector):
+            if val == 0:
+                new_a = tmp_vector[last_index:i]
+                vector_len = len(new_a)
+                if(vector_len > 0):
+                    new_a = [0] + new_a + [0]
                     totalValue += 5000 # 5km penelty for each car
-                    totalValue += self.calTravelCost(tmp_vector[start : i+1])
+                    totalValue += self.calTravelCost(new_a)
+                    
+                    #violation cost
                     if(vector_len > self.capacity):
-                        violation = True
-                        #violation cost
+                        violation = True                        
                         qx = (vector_len - self.capacity) * 5000 # 5km 
                         totalValue += alpha * qx
                         #print ("we have cars that over the capacity, capacity is : {} and number of pickup points is {}, qx is {},alpha is {}"
                         #    .format(*(self.capacity,vector_len,qx,alpha)) )
                        
-                start = i
+                last_index = i+1
         return (totalValue,violation)
-
-
-        #print (myVector)
 
     # calTravelCost func get road (vecor of point) and calculate the total cost for this road
     # each vector should start with 0 that represent thet start point (factory)
     # exmple : 
     #       input <[0, 4, 5, 1, 0]> 
     #   then the road is <0 -> 4 -> 5 -> 1 -> 0 > and we calculate the sum of A[0][4] + A[4][5] + A[5][1] + A[1][0]
-    def calTravelCost(self,myVector): 
+    def calTravelCost(self,myVector):
         totalValue = 0
-        #for i in range(0,len(myVector)-1):
         for i in range(1,len(myVector)-1):
-            #print ("my vector is ",myVector,"matrix is ",self.mat)
             row = myVector[i]
             col = myVector[i+1]
             totalValue += self.mat[col][row]
