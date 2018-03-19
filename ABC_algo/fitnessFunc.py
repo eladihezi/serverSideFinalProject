@@ -54,7 +54,7 @@ class fitnessFunctionClass:
     # each vector should start with 0 that represent thet start point (factory)
     # exmple : 
     #       input <[0, 4, 5, 1, 0]> 
-    #   then the road is <0 -> 4 -> 5 -> 1 -> 0 > and we calculate the sum of A[0][4] + A[4][5] + A[5][1] + A[1][0]
+    #  then the road is <0 -> 4 -> 5 -> 1 -> 0 > and we calculate the sum of A[0][4] + A[4][5] + A[5][1] + A[1][0]
     def calTravelCost(self,myVector):
         totalValue = 0
         for i in range(1,len(myVector)-1):
@@ -64,6 +64,8 @@ class fitnessFunctionClass:
         return (totalValue)
 
 
+    # setProbability - this methos for the onlooker bees 
+    # we set for each Food source his probability to selected from population
     def setProbability(foodSourceFF):
         totals = []
         running_total = 0
