@@ -11,7 +11,7 @@ class MyConnectionDBClass():
         self.db = MySQLdb.connect("127.0.0.1","root","root",'projectdb' )
         self.cursor = self.db.cursor()
 
-    # insert/delete/update type of query cand be sent here
+    # InsertQuery - insert/delete/update type of query cand be sent here
     # example : query = ("INSERT INTO employees( firstname, lastname) VALUES (\"IGOR1\",\"MAMORSKI1\");")
     def InsertQuery(self,query):       
         try:
@@ -22,7 +22,7 @@ class MyConnectionDBClass():
             pass
         return False
 
-    # select type of query 
+    # SelectQuery -select type of query 
     # example : query = ("SELECT * FROM employees ;")
     def SelectQuery(self,query):       
         result = "error"
