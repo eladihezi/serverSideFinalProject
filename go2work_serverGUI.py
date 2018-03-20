@@ -63,7 +63,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     # get the msg from client and send back msg   
     def handle(self):
         # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(1024).strip()
+        self.data = self.request.recv(4096).strip()
         print("{} wrote:".format(self.client_address[0]))
         
         arr = self.data.decode("utf-8").split(";")

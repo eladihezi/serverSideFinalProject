@@ -36,9 +36,9 @@ def daemon(dict_of_param,stop_thread):
     
     LIMIT = 50 * collectionPoint
     numOfIterations = {
-        'low' : 1000,#randint(1,2)*1000,
-        'medium' : randint(10,20)*1000,
-        'high' : randint(70,100)*1000,
+        'low' : randint(2,5)*1000,
+        'medium' : randint(7,15)*1000,
+        'high' : randint(20,35)*1000,
     }
 
     ffclass = fitnessFunctionClass(capacity)
