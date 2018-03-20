@@ -36,9 +36,9 @@ def daemon(dict_of_param,stop_thread):
     
     LIMIT = 50 * collectionPoint
     numOfIterations = {
-        'low' : math.pow(collectionPoint,2)*cars,
-        'medium' : math.pow(collectionPoint,3)*cars,
-        'high' : math.pow(collectionPoint,4)*cars,
+        'low' : 1000,#randint(1,2)*1000,
+        'medium' : randint(10,20)*1000,
+        'high' : randint(70,100)*1000,
     }
 
     ffclass = fitnessFunctionClass(capacity)
@@ -208,6 +208,7 @@ def daemon(dict_of_param,stop_thread):
     for f in allPopulation :
         if(not f.violation):
             best_solution = f
+            break
     return best_solution.solutionToJson()
 
 

@@ -15,7 +15,7 @@ class fitnessFunctionClass:
     # class constructor get the distance matrix from the file after the server write the values to the file
     # and set capacity as given
     def __init__(self,capacity):
-        self.mat = numpy.loadtxt(open("ABC_algo/distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
+        self.mat = numpy.loadtxt(open("distanceMatrix.csv", "rb"),  dtype='int',delimiter=",")
         self.capacity = capacity
 
 
@@ -70,7 +70,10 @@ class fitnessFunctionClass:
         totals = []
         running_total = 0
         for elem in foodSourceFF:
-            running_total += elem
+            try:
+                running_total += int(elem)
+            except:
+                print("ERROR : the give vector is ",foodSourceFF)
             totals.append(running_total)
         return(totals)
 

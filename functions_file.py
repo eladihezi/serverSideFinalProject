@@ -153,7 +153,7 @@ def RUN_ALGORITHM(data):
     for sourceID,destinationID,distance,firstname,lastname,address in result:       
         distanceMatrix[source_dict[destinationID]][source_dict[sourceID]] = distance
     arr = numpy.asarray(distanceMatrix)
-    numpy.savetxt("ABC_algo/distanceMatrix.csv", arr, delimiter = ",",fmt = '%d')
+    numpy.savetxt("distanceMatrix.csv", arr, delimiter = ",",fmt = '%d')
     data['collectionPoint'] = n-1
 
     # run the Algorithm in new thread 
@@ -195,6 +195,8 @@ def SEARCH(data):
         query = ("SELECT * FROM employees WHERE {} LIKE \'{}%\';".format(*(searchby,data[searchby])))
     result = myDBhandler.SelectQuery(query)
     users = []
+    if(not result):
+        return result
     # change result to dictionary so we can return json easily
     for (empID,firstname,lastname,address,status) in result:
         user = {
