@@ -3,8 +3,6 @@
 import MySQLdb
 import numpy
 import sys
-sys.path.append(r'C:\Users\ehezi\Documents\project workspace\server_final\serverSideFinalProject\make_matrix')
-import googlemaps 
 
 db = MySQLdb.connect("127.0.0.1","root","root")
 cursor = db.cursor()
@@ -21,6 +19,15 @@ sql = """CREATE TABLE `projectdb`.`AdminUsers` (
 )
 ENGINE = InnoDB;"""
 cursor.execute(sql)
+
+
+username = 'root' 
+password = 'root'
+query = ("""INSERT INTO `projectdb`.`AdminUsers` ( username, password)
+	  VALUES (\'{}\',  \'{}\');""".format(*(username, password)))  
+
+result = cursor.execute(query)
+db.commit()
 
 sql ="""CREATE TABLE `projectdb`.`employees` (
   `empID` INTEGER UNSIGNED NOT NULL,
@@ -50,13 +57,7 @@ sql = """CREATE TABLE `projectdb`.`distances` (
     )
     ENGINE = InnoDB;
     """
-# sql ="""CREATE TABLE `projectdb`.`distances` (
-#   `sourceID` INTEGER UNSIGNED NOT NULL,
-#   `destinationID` INTEGER UNSIGNED NOT NULL,
-#   `distance` INTEGER UNSIGNED NOT NULL
- 
-# )
-# """
+
 cursor.execute(sql)
 
 
@@ -112,14 +113,9 @@ emp_array = [
 
 
 
-
-
-
-
 ]
 
 
-gmaps = googlemaps.Client(key='AIzaSyBN-UulFeXqjqECo628iWwY9pEZyGRUltA')
 
 
 for emp in emp_array:
@@ -130,21 +126,8 @@ for emp in emp_array:
   query = ("""INSERT INTO `projectdb`.`employees` (empID, firstname, lastname,address)
       VALUES ({}, \'{}\',  \'{}\',\'{}\');""".format(*(empID,firstname, lastname,address)))  
   result = cursor.execute(query)
-  print ("result is ",result)
 db.commit()
 
- 
-##init distance matrix for DB
-for emp in emp_array:
-  for emp1 in emp_array:
-    print ("id1 = ",emp1['empID'],"id2 = ",emp['empID'] )
-    if(emp1['empID'] == emp['empID']):
-        continue
-    distance_result = gmaps.distance_matrix(emp1['address'],emp['address'])
-    query = ("""INSERT INTO `projectdb`.`distances` (sourceID, destinationID, distance)
-      VALUES ({}, \'{}\',  \'{}\');""".format(*(emp1['empID'],emp['empID'],distance_result['rows'][0]['elements'][0]['distance']['value'] )))
-    cursor.execute(query)
 
-db.commit()
 cursor.close()
 db.close()
